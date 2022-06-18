@@ -1,0 +1,29 @@
+[ BrainFart has unlimited tape on both ends, 
+  this program will print "000"
+]
+
+( define main )
+[-]{
+  <[-]+@
+  >[-]+@
+  >[-]+@
+  .<.<.<
+  [-]++@
+}
+
+( define '0' )
+[-]+{
+  ++++++++
+  ++++++++
+  ++++++++
+  ++++++++
+  ++++++++
+  ++++++++
+}
+
+( define newline )
+[-]++{
+  ++++++++ ++xxxxxx .
+}
+
+[-]@

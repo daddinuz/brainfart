@@ -1,0 +1,26 @@
+( define main at index 0 )
+[-]{
+    ( print "hello" )
+    ++++++++ +++++++x >++++++++ ++++xxxx >++++++++ ++++xxxx >+++++xxx >++++++++
+    [ > [-]+@ . < ]
+    
+    ( call newline )
+    [-]++@
+}
+
+( define ascii at index 1 )
+[-]+{
+    ( increase cell by 96 )
+    < ++++++++ >
+    [-] ++++++++ +++xxxxx [
+        - < ++++++++ >
+    ] <
+}
+
+( define newline at index 2 )
+[-]++{
+    ++++++++ ++xxxxxx .
+}
+
+( call main )
+[-]@
