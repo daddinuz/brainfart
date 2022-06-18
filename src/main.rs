@@ -23,10 +23,10 @@ fn main() -> Result<(), Errors> {
     vm.run()?;
 
     if interactive {
-        repl(&mut vm)
-    } else {
-        Ok(())
+        return repl(&mut vm);
     }
+
+    Ok(())
 }
 
 fn repl(vm: &mut Vm) -> Result<(), Errors> {
