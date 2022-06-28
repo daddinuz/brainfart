@@ -24,7 +24,7 @@ BrainFart is my implementation of the one and the only [BrainFuck](https://en.wi
 In order to support functions BrainFart implements three additional instructions that are not present in BrainFuck:
 1. `{`: Def
 2. `}`: End
-3. `\\`: Ret
+3. `\`: Ret
 4. `@`: Call
 
 ### Implementation details
