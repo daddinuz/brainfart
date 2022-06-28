@@ -98,7 +98,7 @@ impl Parser {
             ']' => {
                 if self.brackets > 0 {
                     self.brackets -= 1;
-                    Ok(Some(Opcode::Repeat))
+                    Ok(Some(Opcode::Until))
                 } else {
                     Err(CliError::new(format!(
                         "At {}:{}: mismatching `]`",
@@ -109,13 +109,12 @@ impl Parser {
 
             '{' => {
                 self.braces += 1;
-                Ok(Some(Opcode::Bind))
+                Ok(Some(Opcode::Def))
             }
-            '@' => Ok(Some(Opcode::Call)),
             '}' => {
                 if self.braces > 0 {
                     self.braces -= 1;
-                    Ok(Some(Opcode::Ret))
+                    Ok(Some(Opcode::End))
                 } else {
                     Err(CliError::new(format!(
                         "At {}:{}: mismatching `}}`",
@@ -123,6 +122,9 @@ impl Parser {
                     )))
                 }
             }
+
+            '\\' => Ok(Some(Opcode::Ret)),
+            '@' => Ok(Some(Opcode::Call)),
 
             _ => Ok(None),
         };

@@ -99,7 +99,7 @@ impl Vm {
                         .position(|opcode| {
                             match opcode {
                                 Opcode::While => acc += 1,
-                                Opcode::Repeat => acc -= 1,
+                                Opcode::Until => acc -= 1,
                                 _ => (),
                             }
 
@@ -110,7 +110,7 @@ impl Vm {
                     self.pc += offset;
                 }
             }
-            Opcode::Repeat => {
+            Opcode::Until => {
                 if self.tape[self.cell] != 0 {
                     let mut acc: usize = 0;
                     let pc = self.code[..self.pc]
@@ -118,7 +118,7 @@ impl Vm {
                         .rposition(|opcode| {
                             match opcode {
                                 Opcode::While => acc -= 1,
-                                Opcode::Repeat => acc += 1,
+                                Opcode::Until => acc += 1,
                                 _ => (),
                             }
 
@@ -130,7 +130,7 @@ impl Vm {
                 }
             }
 
-            Opcode::Bind => {
+            Opcode::Def => {
                 let i = self.tape[self.cell] as usize;
 
                 self.slots.resize(usize::max(self.slots.len(), i + 1), 0);
@@ -141,8 +141,8 @@ impl Vm {
                     .iter()
                     .position(|opcode| {
                         match opcode {
-                            Opcode::Bind => acc += 1,
-                            Opcode::Ret => acc -= 1,
+                            Opcode::Def => acc += 1,
+                            Opcode::End => acc -= 1,
                             _ => (),
                         }
 
@@ -152,6 +152,8 @@ impl Vm {
 
                 self.pc += offset + 1;
             }
+
+            Opcode::End | Opcode::Ret => self.pc = self.calls.pop().unwrap_or(usize::MAX),
             Opcode::Call => {
                 let i = self.tape[self.cell] as usize;
                 if let Some(pc) = self.slots.get(i).copied() {
@@ -160,7 +162,6 @@ impl Vm {
                     self.pc = pc;
                 }
             }
-            Opcode::Ret => self.pc = self.calls.pop().unwrap_or(usize::MAX),
         }
 
         Ok(())

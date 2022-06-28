@@ -10,9 +10,11 @@ pub enum Opcode {
     Write,
 
     While,
-    Repeat,
+    Until,
 
-    Bind,
-    Call,
+    Def,
+    End,
+
     Ret,
+    Call,
 }
