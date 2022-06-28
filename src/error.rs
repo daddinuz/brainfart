@@ -1,12 +1,25 @@
 use crate::show::Show;
-
-use std::{error, fmt};
+use std::error::Error;
+use std::fmt;
+use std::ops::Deref;
 
 pub struct CliError(Box<dyn Show>);
 
-impl CliError {
-    pub fn new(message: impl 'static + Show) -> Self {
+impl From<String> for CliError {
+    fn from(message: String) -> Self {
         Self(Box::new(message))
+    }
+}
+
+impl From<&'static str> for CliError {
+    fn from(message: &'static str) -> Self {
+        Self(Box::new(message))
+    }
+}
+
+impl CliError {
+    pub fn new(error: impl 'static + Show) -> Self {
+        Self(Box::new(error))
     }
 }
 
@@ -22,33 +35,30 @@ impl fmt::Display for CliError {
     }
 }
 
-impl error::Error for CliError {}
+impl Error for CliError {}
 
 #[derive(Default)]
-pub struct Errors(Vec<CliError>);
+pub struct CliErrors(Vec<CliError>);
 
-impl From<CliError> for Errors {
-    fn from(error: CliError) -> Self {
-        Self(vec![error])
-    }
-}
-
-impl<T, const N: usize> From<[T; N]> for Errors
+impl<E> From<E> for CliErrors
 where
-    T: 'static + Show,
+    E: Into<CliError>,
 {
-    fn from(errors: [T; N]) -> Self {
-        Self(errors.into_iter().map(CliError::new).collect())
+    fn from(error: E) -> Self {
+        Self(vec![error.into()])
     }
 }
 
-impl From<Vec<CliError>> for Errors {
-    fn from(errors: Vec<CliError>) -> Self {
-        Self(errors)
+impl<E> FromIterator<E> for CliErrors
+where
+    E: Into<CliError>,
+{
+    fn from_iter<I: IntoIterator<Item = E>>(errors: I) -> Self {
+        Self(errors.into_iter().map(Into::into).collect())
     }
 }
 
-impl Errors {
+impl CliErrors {
     pub fn new() -> Self {
         Self::default()
     }
@@ -56,13 +66,17 @@ impl Errors {
     pub fn push(&mut self, error: CliError) {
         self.0.push(error);
     }
+}
 
-    pub fn is_empty(&self) -> bool {
-        self.0.is_empty()
+impl Deref for CliErrors {
+    type Target = [CliError];
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
     }
 }
 
-impl IntoIterator for Errors {
+impl IntoIterator for CliErrors {
     type Item = CliError;
     type IntoIter = std::vec::IntoIter<Self::Item>;
 
@@ -71,18 +85,18 @@ impl IntoIterator for Errors {
     }
 }
 
-impl fmt::Debug for Errors {
+impl fmt::Debug for CliErrors {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         writeln!(f)?;
         self.0.iter().try_for_each(|e| writeln!(f, "  {e:?}"))
     }
 }
 
-impl fmt::Display for Errors {
+impl fmt::Display for CliErrors {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         writeln!(f)?;
         self.0.iter().try_for_each(|e| writeln!(f, "  {e}"))
     }
 }
 
-impl error::Error for Errors {}
+impl Error for CliErrors {}

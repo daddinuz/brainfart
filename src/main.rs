@@ -1,9 +1,9 @@
-use brainfart::error::{CliError, Errors};
+use brainfart::error::{CliError, CliErrors};
 use brainfart::Vm;
 
 use std::{env, fs, io};
 
-fn main() -> Result<(), Errors> {
+fn main() -> Result<(), CliErrors> {
     let exe = env!("CARGO_PKG_NAME");
     let args: Vec<String> = env::args().skip(1).collect();
 
@@ -12,7 +12,7 @@ fn main() -> Result<(), Errors> {
         [mode] if mode == "-i" => (true, None),
         [file] => (false, Some(file)),
         [] => (true, None),
-        _ => return Err(Errors::from([format!("{exe} [-i] [file]")])),
+        _ => return Err(CliErrors::from(format!("{exe} [-i] [file]"))),
     };
 
     let program = file
@@ -29,7 +29,7 @@ fn main() -> Result<(), Errors> {
     Ok(())
 }
 
-fn repl(vm: &mut Vm) -> Result<(), Errors> {
+fn repl(vm: &mut Vm) -> Result<(), CliErrors> {
     let stdin = io::stdin();
     let mut line = String::new();
 

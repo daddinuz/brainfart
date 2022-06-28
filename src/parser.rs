@@ -1,4 +1,4 @@
-use crate::error::{CliError, Errors};
+use crate::error::{CliError, CliErrors};
 use crate::opcode::Opcode;
 
 use std::str::FromStr;
@@ -21,7 +21,7 @@ impl Program {
 }
 
 impl FromStr for Program {
-    type Err = Errors;
+    type Err = CliErrors;
 
     fn from_str(program: &str) -> Result<Self, Self::Err> {
         parse(program.chars())
@@ -41,9 +41,9 @@ impl Parser {
         Self::default()
     }
 
-    pub fn parse(&mut self, stream: impl IntoIterator<Item = char>) -> Result<Program, Errors> {
+    pub fn parse(&mut self, stream: impl IntoIterator<Item = char>) -> Result<Program, CliErrors> {
         let mut program = Program::new();
-        let mut errors = Errors::new();
+        let mut errors = CliErrors::new();
 
         for c in stream.into_iter() {
             match self.step(c) {
@@ -132,7 +132,7 @@ impl Parser {
     }
 }
 
-pub fn parse(stream: impl IntoIterator<Item = char>) -> Result<Program, Errors> {
+pub fn parse(stream: impl IntoIterator<Item = char>) -> Result<Program, CliErrors> {
     let mut parser = Parser::new();
     parser.parse(stream)
 }
