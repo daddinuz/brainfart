@@ -1,7 +1,7 @@
+use std::{env, fs, io};
+
 use brainfart::error::{CliError, CliErrors};
 use brainfart::Vm;
-
-use std::{env, fs, io};
 
 fn main() -> Result<(), CliErrors> {
     let exe = env!("CARGO_PKG_NAME");

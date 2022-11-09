@@ -1,7 +1,8 @@
-use crate::show::Show;
 use std::error::Error;
-use std::fmt;
+use std::fmt::{Debug, Display, Formatter, Result as FmtResult};
 use std::ops::Deref;
+
+use crate::show::Show;
 
 pub struct CliError(Box<dyn Show>);
 
@@ -23,14 +24,14 @@ impl CliError {
     }
 }
 
-impl fmt::Debug for CliError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl Debug for CliError {
+    fn fmt(&self, f: &mut Formatter) -> FmtResult {
         write!(f, "{:?}", self.0)
     }
 }
 
-impl fmt::Display for CliError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl Display for CliError {
+    fn fmt(&self, f: &mut Formatter) -> FmtResult {
         write!(f, "{}", self.0)
     }
 }
@@ -85,15 +86,15 @@ impl IntoIterator for CliErrors {
     }
 }
 
-impl fmt::Debug for CliErrors {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl Debug for CliErrors {
+    fn fmt(&self, f: &mut Formatter) -> FmtResult {
         writeln!(f)?;
         self.0.iter().try_for_each(|e| writeln!(f, "  {e:?}"))
     }
 }
 
-impl fmt::Display for CliErrors {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl Display for CliErrors {
+    fn fmt(&self, f: &mut Formatter) -> FmtResult {
         writeln!(f)?;
         self.0.iter().try_for_each(|e| writeln!(f, "  {e}"))
     }
