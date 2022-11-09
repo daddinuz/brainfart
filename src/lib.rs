@@ -1,16 +1,17 @@
 pub mod error;
 pub mod opcode;
 pub mod parser;
+pub mod program;
 
 pub(crate) mod show;
-
-use error::CliError;
-use opcode::Opcode;
-use parser::Program;
 
 use std::collections::VecDeque;
 use std::io::{self, ErrorKind, Read};
 use std::slice;
+
+use error::CliError;
+use opcode::Opcode;
+use program::Program;
 
 #[derive(Default)]
 pub struct Vm {
