@@ -16,7 +16,7 @@ BrainFart is my implementation of the one and the only [BrainFuck](https://en.wi
 | ]      | If the value of the current cell is not 0 then jump to the instruction after the matching `[`                    |
 | {      | Define a function identified by the value of the current cell and jump to the instruction after the matching `}` |
 | }      | End function definition                                                                                          |
-| \\     | Early return                                                                                                     |
+| \\     | Return from function                                                                                             |
 | @      | Call the function identified by the value of the current cell                                                    |
 
 ### Extensions
@@ -33,7 +33,7 @@ In order to support functions BrainFart implements three additional instructions
 - wrapping on owerflows
 - unlimited tape size (on both directions)
 - Zero on EOF
-- When a function gets called the value of the current cell will be set to 0
+- When a function gets defined/called the value of the current cell will be set to 0
 - Functions can be redefined: at the start of the program every function is defined as noop
 - Since cells are used to identify functions the maximum number of functions allowed is 256: from 0 to 255
 - return from outside of any function terminates execution (if not in interactive mode)

@@ -6,16 +6,21 @@ use std::collections::VecDeque;
 use std::error::Error;
 use std::fmt::{Display, Formatter, Result as FmtResult};
 use std::io::{self, ErrorKind, Read};
-use std::slice;
+use std::{mem, slice};
 
 use opcode::Opcode;
 use program::Program;
 
+// Special marker used to indicate that
+// no jump must be performed, execution
+// continues with the next instruction
+const JUMP_NEXT: usize = usize::MAX;
+
 #[derive(Default)]
 pub struct Vm {
     tape: VecDeque<u8>,
-    slots: Vec<usize>,
-    calls: Vec<usize>,
+    jump: Vec<usize>,
+    link: Vec<usize>,
     code: Vec<Opcode>,
     cell: usize,
     pc: usize,
@@ -131,10 +136,11 @@ impl Vm {
             }
 
             Opcode::Def => {
-                let i = self.tape[self.cell] as usize;
+                let index = mem::replace(&mut self.tape[self.cell], 0) as usize;
+                let new_len = usize::max(self.jump.len(), index + 1);
 
-                self.slots.resize(usize::max(self.slots.len(), i + 1), 0);
-                self.slots[i] = self.pc;
+                self.jump.resize(new_len, JUMP_NEXT);
+                self.jump[index] = self.pc;
 
                 let mut acc: usize = 1;
                 let offset = self.code[self.pc..]
@@ -153,12 +159,13 @@ impl Vm {
                 self.pc += offset + 1;
             }
 
-            Opcode::End | Opcode::Ret => self.pc = self.calls.pop().unwrap_or(usize::MAX),
+            Opcode::End | Opcode::Ret => self.pc = self.link.pop().unwrap_or(usize::MAX),
             Opcode::Call => {
-                let i = self.tape[self.cell] as usize;
-                if let Some(pc) = self.slots.get(i).copied() {
-                    self.calls.push(self.pc);
-                    self.tape[self.cell] = 0;
+                // current cell must be set to zero in any case
+                let index = mem::replace(&mut self.tape[self.cell], 0) as usize;
+
+                if let Some(pc) = self.jump.get(index).copied().filter(|pc| *pc != JUMP_NEXT) {
+                    self.link.push(self.pc);
                     self.pc = pc;
                 }
             }
