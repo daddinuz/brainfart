@@ -1,8 +1,7 @@
 use std::str::FromStr;
 
-use crate::error::CliErrors;
 use crate::opcode::Opcode;
-use crate::parser;
+use crate::parser::{self, ParseError};
 
 #[derive(Debug)]
 pub struct Program(Vec<Opcode>);
@@ -22,7 +21,7 @@ impl Program {
 }
 
 impl FromStr for Program {
-    type Err = CliErrors;
+    type Err = ParseError;
 
     fn from_str(program: &str) -> Result<Self, Self::Err> {
         parser::parse(program.chars())

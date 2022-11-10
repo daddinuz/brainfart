@@ -1,15 +1,13 @@
-pub mod error;
 pub mod opcode;
 pub mod parser;
 pub mod program;
 
-pub(crate) mod show;
-
 use std::collections::VecDeque;
+use std::error::Error;
+use std::fmt::{Display, Formatter, Result as FmtResult};
 use std::io::{self, ErrorKind, Read};
 use std::slice;
 
-use error::CliError;
 use opcode::Opcode;
 use program::Program;
 
@@ -43,7 +41,7 @@ impl Vm {
         self.code.append(&mut program.into_inner());
     }
 
-    pub fn run(&mut self) -> Result<(), CliError> {
+    pub fn run(&mut self) -> Result<(), RuntimeError> {
         while self.pc < self.code.len() {
             let opcode = self.fetch();
             self.execute(opcode)?;
@@ -52,7 +50,7 @@ impl Vm {
         Ok(())
     }
 
-    pub fn step(&mut self) -> Result<(), CliError> {
+    pub fn step(&mut self) -> Result<(), RuntimeError> {
         if self.pc < self.code.len() {
             let opcode = self.fetch();
             return self.execute(opcode);
@@ -61,7 +59,7 @@ impl Vm {
         Ok(())
     }
 
-    fn execute(&mut self, opcode: Opcode) -> Result<(), CliError> {
+    fn execute(&mut self, opcode: Opcode) -> Result<(), RuntimeError> {
         match opcode {
             Opcode::Left => {
                 if self.cell > 0 {
@@ -87,7 +85,7 @@ impl Vm {
                         self.tape[self.cell] = 0;
                         Ok(())
                     } else {
-                        Err(CliError::new(e))
+                        Err(RuntimeError(e.into()))
                     }
                 })?,
             Opcode::Write => print!("{}", self.tape[self.cell] as char),
@@ -108,15 +106,16 @@ impl Vm {
                         })
                         .unwrap();
 
-                    self.pc += offset;
+                    self.pc += offset + 1;
                 }
             }
             Opcode::Until => {
                 if self.tape[self.cell] != 0 {
-                    let mut acc: usize = 0;
-                    let pc = self.code[..self.pc]
+                    let mut acc: usize = 1;
+                    let offset = self.code[..self.pc - 1]
                         .iter()
-                        .rposition(|opcode| {
+                        .rev()
+                        .position(|opcode| {
                             match opcode {
                                 Opcode::While => acc -= 1,
                                 Opcode::Until => acc += 1,
@@ -127,7 +126,7 @@ impl Vm {
                         })
                         .unwrap();
 
-                    self.pc = pc;
+                    self.pc -= offset + 1;
                 }
             }
 
@@ -174,3 +173,20 @@ impl Vm {
         opcode
     }
 }
+
+#[derive(Debug)]
+pub struct RuntimeError(Box<dyn Error>);
+
+impl RuntimeError {
+    pub fn into_inner(self) -> Box<dyn Error> {
+        self.0
+    }
+}
+
+impl Display for RuntimeError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
+        write!(f, "{}", self.0)
+    }
+}
+
+impl Error for RuntimeError {}
